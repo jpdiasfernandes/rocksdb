@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <cinttypes>
 #include <vector>
+#include <unistd.h>
 
 #include "db/builder.h"
 #include "db/db_iter.h"
@@ -886,6 +887,16 @@ Status FlushJob::WriteLevel0Table() {
                       // TEST_SYNC_POINT_CALLBACK not used.
     TEST_SYNC_POINT_CALLBACK("FlushJob::WriteLevel0Table:num_memtables",
                              &mems_size);
+
+    const auto p1 = std::chrono::system_clock::now();
+    std::time_t today_time = std::chrono::system_clock::to_time_t(p1);
+
+    std::tm *local_time = std::localtime(&today_time);
+
+    std::fstream fs ("rocksdb.log", std::fstream::app);
+    fs << "Flush;" << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << ";Tid " << gettid() << "\n";
+    fs.close();
+
     assert(job_context_);
     for (MemTable* m : mems_) {
       ROCKS_LOG_INFO(

@@ -652,11 +652,12 @@ void CompactionJob::Prepare() {
 
     const auto p1 = std::chrono::system_clock::now();
     std::time_t today_time = std::chrono::system_clock::to_time_t(p1);
-
     std::tm *local_time = std::localtime(&today_time);
-
+    char buffer[20];
+    size_t size = std::strftime(buffer, 20, "%d-%m %T", local_time);
+    std::string time_str(buffer);
     std::fstream fs ("rocksdb.log", std::fstream::app);
-    fs << "Compaction;" << local_time->tm_hour << ":" << local_time->tm_min << ":" << local_time->tm_sec << ";Tid " << gettid() << "\n";
+    fs << "Compaction;" << time_str << ";Tid " << gettid() << "\n";
     fs.close();
 
   RecordTimeToHistogram(stats_, COMPACTION_TIME,

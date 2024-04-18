@@ -15,7 +15,10 @@ int main() {
 }
 #else
 #include "rocksdb/db_bench_tool.h"
+#include <erm/repository.hpp>
 int main(int argc, char** argv) {
-  return ROCKSDB_NAMESPACE::db_bench_tool(argc, argv);
+  int res = ROCKSDB_NAMESPACE::db_bench_tool(argc, argv);
+  erm::Repository::dump_event_timeline_file("/tmp/all_events.log", "root");
+  return res;
 }
 #endif  // GFLAGS

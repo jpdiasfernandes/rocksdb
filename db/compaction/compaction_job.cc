@@ -59,6 +59,8 @@
 #include "test_util/sync_point.h"
 #include "util/stop_watch.h"
 
+#include <erm/repository.hpp>
+
 namespace ROCKSDB_NAMESPACE {
 
 const char* GetCompactionReasonString(CompactionReason compaction_reason) {
@@ -650,15 +652,17 @@ void CompactionJob::Prepare() {
       state.RemoveLastEmptyOutput();
     }
 
-    const auto p1 = std::chrono::system_clock::now();
-    std::time_t today_time = std::chrono::system_clock::to_time_t(p1);
-    std::tm *local_time = std::localtime(&today_time);
-    char buffer[20];
-    size_t size = std::strftime(buffer, 20, "%d-%m %T", local_time);
-    std::string time_str(buffer);
-    std::fstream fs ("rocksdb.log", std::fstream::app);
-    fs << "Compaction;" << time_str << ";Tid " << gettid() << "\n";
-    fs.close();
+    erm::Repository::start_event("compaction#" + erm::concats(gettid()));
+
+    //const auto p1 = std::chrono::system_clock::now();
+    //std::time_t today_time = std::chrono::system_clock::to_time_t(p1);
+    //std::tm *local_time = std::localtime(&today_time);
+    //char buffer[20];
+    //size_t size = std::strftime(buffer, 20, "%d-%m %T", local_time);
+    //std::string time_str(buffer);
+    //std::fstream fs ("rocksdb.log", std::fstream::app);
+    //fs << "Compaction;" << time_str << ";Tid " << gettid() << "\n";
+    //fs.close();
 
   RecordTimeToHistogram(stats_, COMPACTION_TIME,
                         compaction_stats_.stats.micros);
@@ -851,6 +855,7 @@ void CompactionJob::Prepare() {
   }
   RecordCompactionIOStats();
   LogFlush(db_options_.info_log);
+  erm::Repository::close_and_dump_event("/tmp/compaction.log", "compaction#" + erm::concats(gettid()));
   TEST_SYNC_POINT("CompactionJob::Run():End");
   compact_->status = status;
   TEST_SYNC_POINT_CALLBACK("CompactionJob::Run():EndStatusSet", &status);

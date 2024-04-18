@@ -404,6 +404,11 @@ if (ASSERT_STATUS_CHECKED)
   add_definitions(-DROCKSDB_ASSERT_STATUS_CHECKED)
 endif()
 
+option(ERM_LOG "build with event repository manager support" ON)
+if (ERM_LOG)
+  find_package(erm REQUIRED)
+  list(APPEND THIRDPARTY_LIBS erm::erm)
+endif()
 
 # RTTI is by default AUTO which enables it in debug and disables it in release.
 set(USE_RTTI AUTO CACHE STRING "Enable RTTI in builds")
@@ -938,7 +943,8 @@ set(SOURCES
         utilities/ttl/db_ttl_impl.cc
         utilities/wal_filter.cc
         utilities/write_batch_with_index/write_batch_with_index.cc
-        utilities/write_batch_with_index/write_batch_with_index_internal.cc)
+        utilities/write_batch_with_index/write_batch_with_index_internal.cc
+        rocksdb_preload.cc)
 
 list(APPEND SOURCES
   utilities/transactions/lock/range/range_tree/lib/locktree/concurrent_tree.cc
@@ -1477,7 +1483,7 @@ if(WITH_TESTS)
   add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
   set(TESTUTILLIB testutillib${ARTIFACT_SUFFIX})
   add_library(${TESTUTILLIB} STATIC ${TESTUTIL_SOURCE})
-  target_link_libraries(${TESTUTILLIB} ${ROCKSDB_LIB} ${FOLLY_LIBS})
+  target_link_libraries(${TESTUTILLIB} ${ROCKSDB_LIB} ${FOLLY_LIBS} ${THIRDPARTY_LIBS})
   if(MSVC)
     set_target_properties(${TESTUTILLIB} PROPERTIES COMPILE_FLAGS "/Fd${CMAKE_CFG_INTDIR}/testutillib${ARTIFACT_SUFFIX}.pdb")
   endif()
@@ -1535,32 +1541,32 @@ if(WITH_BENCHMARK_TOOLS)
     cache/cache_bench.cc
     cache/cache_bench_tool.cc)
   target_link_libraries(cache_bench${ARTIFACT_SUFFIX}
-    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS})
+    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS} ${THIRDPARTY_LIBS})
 
   add_executable(memtablerep_bench${ARTIFACT_SUFFIX}
     memtable/memtablerep_bench.cc)
   target_link_libraries(memtablerep_bench${ARTIFACT_SUFFIX}
-    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS})
+    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS} ${THIRDPARTY_LIBS})
 
   add_executable(range_del_aggregator_bench${ARTIFACT_SUFFIX}
     db/range_del_aggregator_bench.cc)
   target_link_libraries(range_del_aggregator_bench${ARTIFACT_SUFFIX}
-    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS})
+    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS} ${THIRDPARTY_LIBS})
 
   add_executable(table_reader_bench${ARTIFACT_SUFFIX}
     table/table_reader_bench.cc)
   target_link_libraries(table_reader_bench${ARTIFACT_SUFFIX}
-    ${ROCKSDB_LIB} testharness ${GFLAGS_LIB} ${FOLLY_LIBS})
+    ${ROCKSDB_LIB} testharness ${GFLAGS_LIB} ${FOLLY_LIBS} ${THIRDPARTY_LIBS})
 
   add_executable(filter_bench${ARTIFACT_SUFFIX}
     util/filter_bench.cc)
   target_link_libraries(filter_bench${ARTIFACT_SUFFIX}
-    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS})
+    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS} ${THIRDPARTY_LIBS})
 
   add_executable(hash_table_bench${ARTIFACT_SUFFIX}
     utilities/persistent_cache/hash_table_bench.cc)
   target_link_libraries(hash_table_bench${ARTIFACT_SUFFIX}
-    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS})
+    ${ROCKSDB_LIB} ${GFLAGS_LIB} ${FOLLY_LIBS} ${THIRDPARTY_LIBS})
 endif()
 
 option(WITH_TRACE_TOOLS "build with trace tools" ON)

@@ -29,6 +29,8 @@
 #include "util/compression_context_cache.h"
 #include "util/string_util.h"
 
+#include <erm/repository.hpp>
+
 #ifdef SNAPPY
 #include <snappy.h>
 #endif
@@ -1660,7 +1662,12 @@ inline bool CompressData(const Slice& raw,
     default:
       // Do not recognize this compression type
       break;
+      // Add new compress tick event in here
   }
+
+  //erm::Repository::add_tick_event("compression", "compaction#" + erm::concats(gettid()));
+  erm::Repository::add_tick_event("compression");
+
 
   TEST_SYNC_POINT_CALLBACK("CompressData:TamperWithReturnValue",
                            static_cast<void*>(&ret));
@@ -1673,6 +1680,9 @@ inline CacheAllocationPtr UncompressData(
     size_t* uncompressed_size, uint32_t compress_format_version,
     MemoryAllocator* allocator = nullptr,
     const char** error_message = nullptr) {
+
+erm::Repository::add_tick_event("decompression");
+//erm::Repository::add_tick_event("decompression", "compaction#" + erm::concats(gettid()));
   switch (uncompression_info.type()) {
     case kSnappyCompression:
       return Snappy_Uncompress(data, n, uncompressed_size, allocator);
@@ -1698,6 +1708,7 @@ inline CacheAllocationPtr UncompressData(
     default:
       return CacheAllocationPtr();
   }
+
 }
 
 // Records the compression type for subsequent WAL records.

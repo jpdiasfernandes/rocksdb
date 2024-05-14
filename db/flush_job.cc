@@ -48,7 +48,9 @@
 #include "util/mutexlock.h"
 #include "util/stop_watch.h"
 
+#include <erm/repository.hpp>
 namespace ROCKSDB_NAMESPACE {
+
 
 const char* GetFlushReasonString(FlushReason flush_reason) {
   switch (flush_reason) {
@@ -888,6 +890,7 @@ Status FlushJob::WriteLevel0Table() {
     TEST_SYNC_POINT_CALLBACK("FlushJob::WriteLevel0Table:num_memtables",
                              &mems_size);
 
+    erm::Repository::start_event("flush#" + erm::concats(gettid()));
     const auto p1 = std::chrono::system_clock::now();
     std::time_t today_time = std::chrono::system_clock::to_time_t(p1);
     std::tm *local_time = std::localtime(&today_time);
@@ -1075,6 +1078,8 @@ Status FlushJob::WriteLevel0Table() {
                  " microseconds, and %" PRIu64 " cpu microseconds.\n",
                  cfd_->GetName().c_str(), job_context_->job_id, micros,
                  cpu_micros);
+
+  erm::Repository::close_and_dump_event("/tmp/flush.log", "flush#" + erm::concats(gettid()));
 
   if (has_output) {
     stats.bytes_written = meta_.fd.GetFileSize();

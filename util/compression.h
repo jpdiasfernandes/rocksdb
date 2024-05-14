@@ -1665,8 +1665,9 @@ inline bool CompressData(const Slice& raw,
       // Add new compress tick event in here
   }
 
-  //erm::Repository::add_tick_event("compression", "compaction#" + erm::concats(gettid()));
-  erm::Repository::add_tick_event("compression");
+  erm::Repository::add_tick_event("compression", "compaction#" + erm::concats(gettid()));
+  erm::Repository::add_tick_event("compression", "flush#" + erm::concats(gettid()));
+  //erm::Repository::add_tick_event("compression");
 
 
   TEST_SYNC_POINT_CALLBACK("CompressData:TamperWithReturnValue",
@@ -1681,8 +1682,9 @@ inline CacheAllocationPtr UncompressData(
     MemoryAllocator* allocator = nullptr,
     const char** error_message = nullptr) {
 
-erm::Repository::add_tick_event("decompression");
-//erm::Repository::add_tick_event("decompression", "compaction#" + erm::concats(gettid()));
+//erm::Repository::add_tick_event("decompression");
+erm::Repository::add_tick_event("decompression", "compaction#" + erm::concats(gettid()));
+erm::Repository::add_tick_event("decompression", "flush#" + erm::concats(gettid()));
   switch (uncompression_info.type()) {
     case kSnappyCompression:
       return Snappy_Uncompress(data, n, uncompressed_size, allocator);

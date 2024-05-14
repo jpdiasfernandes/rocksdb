@@ -624,6 +624,7 @@ void CompactionJob::Prepare() {
     log_buffer_->FlushBufferToLog();
     LogCompaction();
 
+
     const size_t num_threads = compact_->sub_compact_states.size();
     assert(num_threads > 0);
     const uint64_t start_micros = db_options_.clock->NowMicros();
@@ -652,7 +653,6 @@ void CompactionJob::Prepare() {
       state.RemoveLastEmptyOutput();
     }
 
-    erm::Repository::start_event("compaction#" + erm::concats(gettid()));
 
     //const auto p1 = std::chrono::system_clock::now();
     //std::time_t today_time = std::chrono::system_clock::to_time_t(p1);
@@ -1085,6 +1085,7 @@ void CompactionJob::NotifyOnSubcompactionCompleted(
 void CompactionJob::ProcessKeyValueCompaction(SubcompactionState* sub_compact) {
   assert(sub_compact);
   assert(sub_compact->compaction);
+    erm::Repository::start_event("compaction#" + erm::concats(gettid()));
   if (db_options_.compaction_service) {
     CompactionServiceJobStatus comp_status =
         ProcessKeyValueCompactionWithCompactionService(sub_compact);

@@ -92,6 +92,7 @@
 #include "utilities/persistent_cache/block_cache_tier.h"
 #include "util/zipf.h"
 #include "util/latest-generator.h"
+#include "util/flags_log_file.h"
 
 #ifdef MEMKIND
 #include "memory/memkind_kmem_allocator.h"

@@ -47,6 +47,7 @@
 #include "util/coding.h"
 #include "util/mutexlock.h"
 #include "util/stop_watch.h"
+#include "util/flags_log_file.h"
 
 #include <erm/repository.hpp>
 namespace ROCKSDB_NAMESPACE {
@@ -1079,7 +1080,7 @@ Status FlushJob::WriteLevel0Table() {
                  cfd_->GetName().c_str(), job_context_->job_id, micros,
                  cpu_micros);
 
-  erm::Repository::close_and_dump_event("/tmp/flush.log", "flush#" + erm::concats(gettid()));
+  erm::Repository::close_and_dump_event(FLAGS_flush_erm_file, "flush#" + erm::concats(gettid()));
 
   if (has_output) {
     stats.bytes_written = meta_.fd.GetFileSize();

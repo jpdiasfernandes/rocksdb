@@ -58,6 +58,7 @@
 #include "table/unique_id_impl.h"
 #include "test_util/sync_point.h"
 #include "util/stop_watch.h"
+#include "util/flags_log_file.h"
 
 #include <erm/repository.hpp>
 
@@ -855,7 +856,7 @@ void CompactionJob::Prepare() {
   }
   RecordCompactionIOStats();
   LogFlush(db_options_.info_log);
-  erm::Repository::close_and_dump_event("/tmp/compaction.log", "compaction#" + erm::concats(gettid()));
+  erm::Repository::close_and_dump_event(FLAGS_compaction_erm_file, "compaction#" + erm::concats(gettid()));
   TEST_SYNC_POINT("CompactionJob::Run():End");
   compact_->status = status;
   TEST_SYNC_POINT_CALLBACK("CompactionJob::Run():EndStatusSet", &status);

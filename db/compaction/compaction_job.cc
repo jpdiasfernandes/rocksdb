@@ -855,7 +855,7 @@ void CompactionJob::Prepare() {
   }
   RecordCompactionIOStats();
   LogFlush(db_options_.info_log);
-  erm::Repository::close_and_dump_event("/tmp/compaction.log", "compaction#" + erm::concats(gettid()));
+  erm::Repository::close_and_dump_event("compaction.log", "compaction#" + erm::concats(gettid()));
   TEST_SYNC_POINT("CompactionJob::Run():End");
   compact_->status = status;
   TEST_SYNC_POINT_CALLBACK("CompactionJob::Run():EndStatusSet", &status);

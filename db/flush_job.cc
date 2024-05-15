@@ -1079,7 +1079,7 @@ Status FlushJob::WriteLevel0Table() {
                  cfd_->GetName().c_str(), job_context_->job_id, micros,
                  cpu_micros);
 
-  erm::Repository::close_and_dump_event("/tmp/flush.log", "flush#" + erm::concats(gettid()));
+  erm::Repository::close_and_dump_event("flush.log", "flush#" + erm::concats(gettid()));
 
   if (has_output) {
     stats.bytes_written = meta_.fd.GetFileSize();

@@ -1709,6 +1709,12 @@ DEFINE_bool(read_with_latest_user_timestamp, true,
 
 DEFINE_bool(YCSB_uniform_distribution, false, "Uniform key distribution for YCSB");
 
+DEFINE_string(compaction_erm_file, "compaction.log", "The compaction log file that erm uses to dump compaction events.");
+DEFINE_string(db_bench_erm_file, "all_events.log", "Full record of all the events that erm captured throughout "
+              "the execution of db_bench");
+DEFINE_string(flush_erm_file, "flush.log", "The flush log file that erm uses to dump flush events.");
+
+
 DEFINE_string(secondary_cache_uri, "",
               "Full URI for creating a custom secondary cache object");
 static class std::shared_ptr<ROCKSDB_NAMESPACE::SecondaryCache> secondary_cache;

@@ -37,6 +37,8 @@
 #include <queue>
 #include <thread>
 #include <unordered_map>
+#include <regex>
+#include <sstream>
 
 #include "db/db_impl/db_impl.h"
 #include "db/malloc_stats.h"
@@ -1321,6 +1323,14 @@ DEFINE_int32(min_level_to_compress, -1,
              " from this level. Levels with number < min_level_to_compress are"
              " not compressed. Otherwise, apply compression_type to "
              "all levels.");
+
+DEFINE_string(levels_to_compress, "",
+              "Effects are only executed if non-empty and min_level_to_compress == -1,"
+              " compression on these levels is activated."
+              " Otherwise, min_level_to_compress behaviour is expected."
+              " Usage example: levels_to_compress = \"0;1;6;7\". Levels 0, 1, 6 and"
+              " 7 are compressed.");
+
 
 DEFINE_int32(compression_parallel_threads, 1,
              "Number of threads for parallel compression.");
@@ -4535,6 +4545,36 @@ class Benchmark {
         options.compression_per_level[i] = FLAGS_compression_type_e;
       }
     }
+
+    if (FLAGS_min_level_to_compress == -1 && !FLAGS_levels_to_compress.empty()) {
+        const std::regex txt_regex("\\d+(;\\d+)*");
+        std::set<int> levels_compress;
+        if (std::regex_match(FLAGS_levels_to_compress, txt_regex)) {
+            std::stringstream ss(FLAGS_levels_to_compress);
+            std::string level_str;
+            options.compression_per_level.resize(FLAGS_num_levels);
+            while (getline(ss, level_str, ';')) {
+                int level_input = stoi(level_str);
+                if (level_input >= 0 && level_input <= FLAGS_num_levels) {
+                  levels_compress.insert(level_input);
+                }
+            }
+
+            for (int i = 0; i < FLAGS_num_levels; i++) {
+                if (levels_compress.find(i) != levels_compress.end()) {
+                    options.compression_per_level[i] = FLAGS_compression_type_e;
+                }
+                else {
+                    options.compression_per_level[i] = kNoCompression;
+                }
+            }
+
+
+
+        }
+
+    }
+
     options.soft_pending_compaction_bytes_limit =
         FLAGS_soft_pending_compaction_bytes_limit;
     options.hard_pending_compaction_bytes_limit =

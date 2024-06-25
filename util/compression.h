@@ -30,6 +30,7 @@
 #include "util/string_util.h"
 
 #include <erm/repository.hpp>
+#include <erm/generic_context.hpp>
 
 #ifdef SNAPPY
 #include <snappy.h>

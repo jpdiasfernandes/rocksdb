@@ -877,6 +877,7 @@ set(SOURCES
         util/xxhash.cc
         util/latest-generator.cc
         util/zipf.cc
+        util/erm_context.cc
         utilities/agg_merge/agg_merge.cc
         utilities/backup/backup_engine.cc
         utilities/blob_db/blob_compaction_filter.cc

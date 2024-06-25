@@ -58,6 +58,7 @@
 #include "table/unique_id_impl.h"
 #include "test_util/sync_point.h"
 #include "util/stop_watch.h"
+#include "util/erm_context.h"
 
 #include <erm/repository.hpp>
 
@@ -1085,7 +1086,11 @@ void CompactionJob::NotifyOnSubcompactionCompleted(
 void CompactionJob::ProcessKeyValueCompaction(SubcompactionState* sub_compact) {
   assert(sub_compact);
   assert(sub_compact->compaction);
-    erm::Repository::start_event("compaction#" + erm::concats(gettid()));
+  const Compaction* c = sub_compact->compaction;
+  int to_level = c->output_level();
+  int from_level = c->start_level();
+  erm::Repository::start_event("compaction#" + erm::concats(gettid()), "root", std::make_unique<CompactionContext>(from_level, to_level));
+	
   if (db_options_.compaction_service) {
     CompactionServiceJobStatus comp_status =
         ProcessKeyValueCompactionWithCompactionService(sub_compact);

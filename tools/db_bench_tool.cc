@@ -5855,8 +5855,8 @@ class Benchmark {
   void YCSBWorkloadA(ThreadState* thread) {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
-    init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    //init_latestgen(FLAGS_num);
+    //init_zipf_generator(0, FLAGS_num);
 
     std::string value;
     int64_t found = 0;
@@ -5931,8 +5931,8 @@ class Benchmark {
   void YCSBWorkloadB(ThreadState* thread) {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
-    init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    //init_latestgen(FLAGS_num);
+    //init_zipf_generator(0, FLAGS_num);
 
     std::string value;
     int64_t found = 0;
@@ -6004,8 +6004,8 @@ class Benchmark {
   void YCSBWorkloadC(ThreadState* thread) {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
-    init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    //init_latestgen(FLAGS_num);
+    //init_zipf_generator(0, FLAGS_num);
 
     std::string value;
     int64_t found = 0;
@@ -6071,8 +6071,8 @@ class Benchmark {
   void YCSBWorkloadD(ThreadState* thread) {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
-    init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    //init_latestgen(FLAGS_num);
+    //init_zipf_generator(0, FLAGS_num);
 
     std::string value;
     int64_t found = 0;
@@ -6157,8 +6157,8 @@ class Benchmark {
 
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
-    init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    //init_latestgen(FLAGS_num);
+    //init_zipf_generator(0, FLAGS_num);
 
     std::string value;
     int64_t found = 0;
@@ -6244,8 +6244,8 @@ class Benchmark {
   void YCSBWorkloadF(ThreadState* thread) {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;
-    init_latestgen(FLAGS_num);
-    init_zipf_generator(0, FLAGS_num);
+    //init_latestgen(FLAGS_num);
+    //init_zipf_generator(0, FLAGS_num);
 
     std::string value;
     int64_t found = 0;

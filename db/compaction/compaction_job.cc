@@ -625,6 +625,7 @@ void CompactionJob::Prepare() {
     log_buffer_->FlushBufferToLog();
     LogCompaction();
 
+    
 
     const size_t num_threads = compact_->sub_compact_states.size();
     assert(num_threads > 0);
@@ -637,6 +638,10 @@ void CompactionJob::Prepare() {
       thread_pool.emplace_back(&CompactionJob::ProcessKeyValueCompaction, this,
                                &compact_->sub_compact_states[i]);
     }
+    //const Compaction* c = sub_compact->compaction;
+    int to_level = compact_->compaction->output_level();
+    int from_level = compact_->compaction->start_level();
+    erm::Repository::start_event("compaction#" + erm::concats(gettid()), "root", std::make_unique<CompactionContext>(from_level, to_level));
 
     // Always schedule the first subcompaction (whether or not there are also
     // others) in the current thread to be efficient with resources
@@ -1086,10 +1091,6 @@ void CompactionJob::NotifyOnSubcompactionCompleted(
 void CompactionJob::ProcessKeyValueCompaction(SubcompactionState* sub_compact) {
   assert(sub_compact);
   assert(sub_compact->compaction);
-  const Compaction* c = sub_compact->compaction;
-  int to_level = c->output_level();
-  int from_level = c->start_level();
-  erm::Repository::start_event("compaction#" + erm::concats(gettid()), "root", std::make_unique<CompactionContext>(from_level, to_level));
 	
   if (db_options_.compaction_service) {
     CompactionServiceJobStatus comp_status =

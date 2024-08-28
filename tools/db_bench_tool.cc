@@ -7,6 +7,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
+#include <gflags/gflags.h>
 #ifdef GFLAGS
 #ifdef NUMA
 #include <numa.h>
@@ -94,6 +95,7 @@
 #include "utilities/persistent_cache/block_cache_tier.h"
 #include "util/zipf.h"
 #include "util/latest-generator.h"
+#include "util/global.h"
 
 #ifdef MEMKIND
 #include "memory/memkind_kmem_allocator.h"
@@ -829,6 +831,8 @@ DEFINE_bool(finish_after_writes, false,
             "Write thread terminates after all writes are finished");
 
 DEFINE_bool(sync, false, "Sync all writes to disk");
+
+DEFINE_int32(fsync_period, 0, "If greater than 0 only sync writes every fsync_period");
 
 DEFINE_bool(use_fsync, false, "If true, issue fsync instead of fdatasync");
 
@@ -3399,11 +3403,14 @@ class Benchmark {
       read_options_.optimize_multiget_for_io = FLAGS_optimize_multiget_for_io;
       read_options_.auto_readahead_size = FLAGS_auto_readahead_size;
 
+
       void (Benchmark::*method)(ThreadState*) = nullptr;
       void (Benchmark::*post_process_method)() = nullptr;
 
       bool fresh_db = false;
       int num_threads = FLAGS_threads;
+
+      fsync_period = FLAGS_fsync_period;
 
       int num_repeat = 1;
       int num_warmup = 0;

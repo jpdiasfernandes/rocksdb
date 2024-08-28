@@ -7,6 +7,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
+#include "rocksdb/io_status.h"
 #ifdef ROCKSDB_LIB_IO_POSIX
 #include "env/io_posix.h"
 
@@ -39,6 +40,8 @@
 #include "util/autovector.h"
 #include "util/coding.h"
 #include "util/string_util.h"
+#include "util/global.h"
+#include <iostream>
 
 #if defined(OS_LINUX) && !defined(F_SET_RW_HINT)
 #define F_LINUX_SPECIFIC_BASE 1024
@@ -1183,17 +1186,24 @@ IOStatus PosixMmapFile::Flush(const IOOptions& /*opts*/,
 
 IOStatus PosixMmapFile::Sync(const IOOptions& /*opts*/,
                              IODebugContext* /*dbg*/) {
+  if (fsync_period_count == 0) {
+    std::cout << "Doing a sync " << fsync_period_count << " : " << fsync_period << "\n";
+    fsync_period_count = fsync_period;
 #ifdef HAVE_FULLFSYNC
-  if (::fcntl(fd_, F_FULLFSYNC) < 0) {
-    return IOError("while fcntl(F_FULLSYNC) mmapped file", filename_, errno);
-  }
+    if (::fcntl(fd_, F_FULLFSYNC) < 0) {
+      return IOError("while fcntl(F_FULLSYNC) mmapped file", filename_, errno);
+    }
 #else   // HAVE_FULLFSYNC
-  if (fdatasync(fd_) < 0) {
-    return IOError("While fdatasync mmapped file", filename_, errno);
-  }
+    if (fdatasync(fd_) < 0) {
+      return IOError("While fdatasync mmapped file", filename_, errno);
+    }
 #endif  // HAVE_FULLFSYNC
+    return Msync();
+  } else {
+    fsync_period_count--;
+    return IOStatus::OK();
+  }
 
-  return Msync();
 }
 
 /**
@@ -1201,17 +1211,23 @@ IOStatus PosixMmapFile::Sync(const IOOptions& /*opts*/,
  */
 IOStatus PosixMmapFile::Fsync(const IOOptions& /*opts*/,
                               IODebugContext* /*dbg*/) {
+  if (fsync_period_count == 0) {
+    std::cout << "Doing an fsync " << fsync_period_count << " : " << fsync_period << "\n";
+    fsync_period_count = fsync_period;
 #ifdef HAVE_FULLFSYNC
-  if (::fcntl(fd_, F_FULLFSYNC) < 0) {
-    return IOError("While fcntl(F_FULLSYNC) on mmaped file", filename_, errno);
-  }
+    if (::fcntl(fd_, F_FULLFSYNC) < 0) {
+      return IOError("While fcntl(F_FULLSYNC) on mmaped file", filename_, errno);
+    }
 #else   // HAVE_FULLFSYNC
-  if (fsync(fd_) < 0) {
-    return IOError("While fsync mmaped file", filename_, errno);
-  }
+    if (fsync(fd_) < 0) {
+      return IOError("While fsync mmaped file", filename_, errno);
+    }
 #endif  // HAVE_FULLFSYNC
-
-  return Msync();
+    return Msync();
+  } else {
+    fsync_period_count--;
+    return IOStatus::OK();
+  }
 }
 
 /**
@@ -1401,30 +1417,45 @@ IOStatus PosixWritableFile::Flush(const IOOptions& /*opts*/,
 
 IOStatus PosixWritableFile::Sync(const IOOptions& /*opts*/,
                                  IODebugContext* /*dbg*/) {
+  std::cout << "Doing a sync " << fsync_period_count << " : " << fsync_period << "\n";
+  if (fsync_period_count == 0) {
+    fsync_period_count = fsync_period;
 #ifdef HAVE_FULLFSYNC
-  if (::fcntl(fd_, F_FULLFSYNC) < 0) {
-    return IOError("while fcntl(F_FULLFSYNC)", filename_, errno);
-  }
+    if (::fcntl(fd_, F_FULLFSYNC) < 0) {
+      return IOError("while fcntl(F_FULLFSYNC)", filename_, errno);
+    }
 #else   // HAVE_FULLFSYNC
-  if (fdatasync(fd_) < 0) {
-    return IOError("While fdatasync", filename_, errno);
-  }
+    if (fdatasync(fd_) < 0) {
+      return IOError("While fdatasync", filename_, errno);
+    }
 #endif  // HAVE_FULLFSYNC
-  return IOStatus::OK();
+    return IOStatus::OK();
+  } else {
+    fsync_period_count--;
+    return IOStatus::OK();
+  }
 }
 
 IOStatus PosixWritableFile::Fsync(const IOOptions& /*opts*/,
                                   IODebugContext* /*dbg*/) {
+  std::cout << "Doing an fsync " << fsync_period_count << " : " << fsync_period << "\n";
+  if (fsync_period_count == 0) {
+    fsync_period_count = fsync_period;
+
 #ifdef HAVE_FULLFSYNC
-  if (::fcntl(fd_, F_FULLFSYNC) < 0) {
-    return IOError("while fcntl(F_FULLFSYNC)", filename_, errno);
-  }
+    if (::fcntl(fd_, F_FULLFSYNC) < 0) {
+      return IOError("while fcntl(F_FULLFSYNC)", filename_, errno);
+    }
 #else   // HAVE_FULLFSYNC
-  if (fsync(fd_) < 0) {
-    return IOError("While fsync", filename_, errno);
-  }
+    if (fsync(fd_) < 0) {
+      return IOError("While fsync", filename_, errno);
+    }
 #endif  // HAVE_FULLFSYNC
-  return IOStatus::OK();
+    return IOStatus::OK();
+  } else {
+    fsync_period_count--;
+    return IOStatus::OK();
+  }
 }
 
 bool PosixWritableFile::IsSyncThreadSafe() const { return true; }

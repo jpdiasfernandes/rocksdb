@@ -24,7 +24,7 @@
 #include "util/coding.h"
 #include "util/concurrent_task_limiter_impl.h"
 #include "util/udt_util.h"
-
+#include "util/erm_context.h"
 namespace ROCKSDB_NAMESPACE {
 
 bool DBImpl::EnoughRoomForCompaction(
@@ -3679,6 +3679,9 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
       if (c->level(l) == c->output_level()) {
         continue;
       }
+
+      erm::Repository::start_event("trivial#" + erm::concats(gettid()), "root", std::make_unique<CompactionContext>(c->level(l), c->output_level(), job_context->job_id));
+
       for (size_t i = 0; i < c->num_input_files(l); i++) {
         FileMetaData* f = c->input(l, i);
         c->edit()->DeleteFile(c->level(l), f->fd.GetNumber());
@@ -3742,6 +3745,8 @@ Status DBImpl::BackgroundCompaction(bool* made_progress,
         c->output_level(), moved_bytes, status.ToString().c_str(),
         c->column_family_data()->current()->storage_info()->LevelSummary(&tmp));
     *made_progress = true;
+
+    erm::Repository::close_and_dump_event("compaction.log", "trivial#" + erm::concats(gettid()));
 
     // Clear Instrument
     ThreadStatusUtil::ResetThreadStatus();

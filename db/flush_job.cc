@@ -49,6 +49,7 @@
 #include "util/stop_watch.h"
 
 #include <erm/repository.hpp>
+#include "util/erm_context.h"
 namespace ROCKSDB_NAMESPACE {
 
 
@@ -890,17 +891,6 @@ Status FlushJob::WriteLevel0Table() {
     TEST_SYNC_POINT_CALLBACK("FlushJob::WriteLevel0Table:num_memtables",
                              &mems_size);
 
-    erm::Repository::start_event("flush#" + erm::concats(gettid()));
-    const auto p1 = std::chrono::system_clock::now();
-    std::time_t today_time = std::chrono::system_clock::to_time_t(p1);
-    std::tm *local_time = std::localtime(&today_time);
-    char buffer[20];
-    size_t size = std::strftime(buffer, 20, "%d-%m %T", local_time);
-    std::string time_str(buffer);
-    std::fstream fs ("rocksdb.log", std::fstream::app);
-    fs << "Flush;" << time_str << ";Tid " << gettid() << "\n";
-    fs.close();
-
     assert(job_context_);
     for (MemTable* m : mems_) {
       ROCKS_LOG_INFO(
@@ -920,6 +910,7 @@ Status FlushJob::WriteLevel0Table() {
       total_num_range_deletes += m->num_range_deletes();
     }
 
+    erm::Repository::start_event("flush#" + erm::concats(gettid()), "root", std::make_unique<FlushContext>(mems_.size(), total_data_size, job_context_->job_id));
     // TODO(cbi): when memtable is flushed due to number of range deletions
     //  hitting limit memtable_max_range_deletions, flush_reason_ is still
     //  "Write Buffer Full", should make update flush_reason_ accordingly.

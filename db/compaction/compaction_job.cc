@@ -641,7 +641,7 @@ void CompactionJob::Prepare() {
     //const Compaction* c = sub_compact->compaction;
     int to_level = compact_->compaction->output_level();
     int from_level = compact_->compaction->start_level();
-    erm::Repository::start_event("compaction#" + erm::concats(gettid()), "root", std::make_unique<CompactionContext>(from_level, to_level));
+    erm::Repository::start_event("compaction#" + erm::concats(gettid()), "root", std::make_unique<CompactionContext>(from_level, to_level, job_id_));
 
     // Always schedule the first subcompaction (whether or not there are also
     // others) in the current thread to be efficient with resources

@@ -1417,7 +1417,6 @@ IOStatus PosixWritableFile::Flush(const IOOptions& /*opts*/,
 
 IOStatus PosixWritableFile::Sync(const IOOptions& /*opts*/,
                                  IODebugContext* /*dbg*/) {
-  std::cout << "Doing a sync " << fsync_period_count << " : " << fsync_period << "\n";
   if (fsync_period_count == 0) {
     fsync_period_count = fsync_period;
 #ifdef HAVE_FULLFSYNC

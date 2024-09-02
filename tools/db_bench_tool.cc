@@ -120,6 +120,7 @@ DEFINE_string(
     "ycsbwkldf,"
     "ycsbwkldg,"
     "ycsbwkldh,"
+    "ycsbwkldi,"
     "ycsbfill,"
     "fillseq,"
     "fillseqdeterministic,"
@@ -3575,6 +3576,8 @@ class Benchmark {
         method = &Benchmark::YCSBWorkloadG;
       } else if (name == "ycsbwkldh") {
         method = &Benchmark::YCSBWorkloadH;
+      } else if (name == "ycsbwkldi") {
+        method = &Benchmark::YCSBWorkloadI;
       } else if (name == "ycsbfill") {
         method = &Benchmark::YCSBFillDB;
       } else if (name == "readwhilewriting") {
@@ -5819,6 +5822,56 @@ class Benchmark {
     return Status::OK();
   }
 
+  // An application example is a session store that only has writes being done.
+  // Read/update ratio: 0/100
+  // Default data size: 1 KB records
+  // Request distribution: zipfian
+  void YCSBWorkloadI(ThreadState* thread) {
+    ReadOptions options(FLAGS_verify_checksum, true);
+    RandomGenerator gen;
+
+    std::string value;
+    int64_t found = 0;
+
+    int64_t reads_done = 0;
+    int64_t writes_done = 0;
+    Duration duration(FLAGS_duration, FLAGS_num);
+
+    std::unique_ptr<const char[]> key_guard;
+    Slice key = AllocateKey(&key_guard);
+
+    // the number of iterations is the larger of read_ or write_
+    while (!duration.Done(1)) {
+      DB* db = SelectDB(thread);
+
+          long k;
+          if (FLAGS_YCSB_uniform_distribution){
+            //Generate number from uniform distribution
+            k = thread->rand.Next() % FLAGS_num;
+          } else { //default
+            //Generate number from zipf distribution
+            k = nextValue() % FLAGS_num;
+          }
+          GenerateKeyFromInt(k, FLAGS_num, &key);
+
+          Status s = db->Put(write_options_, key, gen.Generate(value_size));
+          if (!s.ok()) {
+              //fprintf(stderr, "put error: %s\n", s.ToString().c_str());
+              //exit(1);
+          } else {
+             writes_done++;
+             thread->stats.FinishedOps(nullptr, db, 1, kWrite);
+          }
+
+    }
+    char msg[100];
+    snprintf(msg, sizeof(msg), "( reads:%" PRIu64 " writes:%" PRIu64 \
+             " total:%" PRIu64 " found:%" PRIu64 ")",
+             reads_done, writes_done, readwrites_, found);
+    thread->stats.AddMessage(msg);
+  }
+
+  }
   void YCSBFillDB(ThreadState* thread) {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;

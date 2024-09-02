@@ -5871,7 +5871,6 @@ class Benchmark {
     thread->stats.AddMessage(msg);
   }
 
-  }
   void YCSBFillDB(ThreadState* thread) {
     ReadOptions options(FLAGS_verify_checksum, true);
     RandomGenerator gen;

@@ -1187,7 +1187,6 @@ IOStatus PosixMmapFile::Flush(const IOOptions& /*opts*/,
 IOStatus PosixMmapFile::Sync(const IOOptions& /*opts*/,
                              IODebugContext* /*dbg*/) {
   if (fsync_period_count == 0) {
-    std::cout << "Doing a sync " << fsync_period_count << " : " << fsync_period << "\n";
     fsync_period_count = fsync_period;
 #ifdef HAVE_FULLFSYNC
     if (::fcntl(fd_, F_FULLFSYNC) < 0) {
@@ -1212,7 +1211,6 @@ IOStatus PosixMmapFile::Sync(const IOOptions& /*opts*/,
 IOStatus PosixMmapFile::Fsync(const IOOptions& /*opts*/,
                               IODebugContext* /*dbg*/) {
   if (fsync_period_count == 0) {
-    std::cout << "Doing an fsync " << fsync_period_count << " : " << fsync_period << "\n";
     fsync_period_count = fsync_period;
 #ifdef HAVE_FULLFSYNC
     if (::fcntl(fd_, F_FULLFSYNC) < 0) {
@@ -1437,7 +1435,6 @@ IOStatus PosixWritableFile::Sync(const IOOptions& /*opts*/,
 
 IOStatus PosixWritableFile::Fsync(const IOOptions& /*opts*/,
                                   IODebugContext* /*dbg*/) {
-  std::cout << "Doing an fsync " << fsync_period_count << " : " << fsync_period << "\n";
   if (fsync_period_count == 0) {
     fsync_period_count = fsync_period;
 

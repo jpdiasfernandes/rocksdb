@@ -24,6 +24,7 @@
 #include "db/blob/blob_file_builder.h"
 #include "db/builder.h"
 #include "db/compaction/clipping_iterator.h"
+#include "db/compaction/compaction.h"
 #include "db/compaction/compaction_state.h"
 #include "db/db_impl/db_impl.h"
 #include "db/dbformat.h"
@@ -639,9 +640,24 @@ void CompactionJob::Prepare() {
                                &compact_->sub_compact_states[i]);
     }
     //const Compaction* c = sub_compact->compaction;
+    Compaction *c = compact_->compaction;
     int to_level = compact_->compaction->output_level();
     int from_level = compact_->compaction->start_level();
-    erm::Repository::start_event("compaction#" + erm::concats(gettid()), "root", std::make_unique<CompactionContext>(from_level, to_level, job_id_));
+    std::map<int, int> input_quantity;
+    std::vector<std::map<uint64_t, uint64_t>> input_info;
+    const std::vector<CompactionInputFiles>* inputs_info = c->inputs();
+    for (const auto &input_level: *inputs_info) {
+      input_quantity.insert({input_level.level, input_level.files.size()});
+      std::map<uint64_t, uint64_t> level_info;
+
+      for (const auto &file_info: input_level.files) {
+        level_info.insert({file_info->fd.GetNumber(), file_info->fd.GetFileSize()});
+      }
+
+      input_info.push_back(level_info);
+    }
+
+    erm::Repository::start_event("compaction#" + erm::concats(gettid()), "root", std::make_unique<CompactionContext>(from_level, to_level, job_id_, input_quantity, input_info));
 
     // Always schedule the first subcompaction (whether or not there are also
     // others) in the current thread to be efficient with resources
